@@ -299,6 +299,6 @@ To ensure design quality and proper hierarchy, the design was elaborated in Xili
 
 ---
 
-**Author:** VEERARAGAVAN M
+**Author:** VEERARAGAVAN M  
 **Last Updated:** January 10, 2026  
 **License:** MIT
