@@ -213,17 +213,17 @@ The final design was stress-tested with a composite program containing all-type 
 **Verdict:**  
 The processor handles all hazard types seamlessly. Data integrity is maintained across all stages.
 
-[Finalwaveform](images/Final_wf1.png)
-[Finalwaveform](images/Final_wf2.png)
-[Finalwaveform](images/Final_wf3.png)
+![Finalwaveform](images/Final_wf1.png)
+![Finalwaveform](images/Final_wf2.png)
+![Finalwaveform](images/Final_wf3.png)
 ---
 
 ## 12. RTL Schematic & Implementation
 
 To ensure design quality and proper hierarchy, the design was elaborated in Xilinx Vivado. The schematic below confirms the logical connections between the Datapath (Fetch, Decode, Execute, Mem, WB) and the centralized Control Units (Controller, Hazard Unit).
 
-[Schematic diagram](images/Schematics.png)
+![Schematic diagram](images/Schematics.png)
 
 **Author:** [VEERARAGAVAN M]  
-**Tools:** Xilinx Vivado 2024, Verilog HDL  
+**Last Updated:** January 10, 2026  
 **License:** MIT
