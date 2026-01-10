@@ -125,7 +125,7 @@ sub s3, s7, s2
 ![Before stall](images/Bf_Stall.png)
 
 ### The Symptom:
-In our waveform, we observed `lw x7, 40(x5)` followed by `and x8, x7, x3`. The `and` instruction read the stale value `0x28` instead of the loaded value `0x06` because it couldn't wait.
+In our waveform, we observed `lw s7, 40(s5)` followed by `and s8, s7, t3`. The `and` instruction read the stale value `0x28` instead of the loaded value `0x06` because it couldn't wait.
 
 **Detection:**  
 We detect this if the instruction currently in Execute is a Load (`ResultSrcE[0] == 1`) and its destination (`RdE`) matches the sources of the instruction currently in Decode (`Rs1D` or `Rs2D`).
@@ -142,7 +142,8 @@ In the next clock cycle, the Load moves to the MEM stage, and the dependent inst
 
 ![After stall](images/Af_Stall.png)
 
-**Observation:** The waveform now shows the pipeline "pausing" for 1 cycle (PC holds value 104), creating a bubble that allows the memory read to complete.
+
+- **Observation:** The waveform now shows the pipeline "pausing" for 1 cycle (PC holds value 104), creating a bubble that allows the memory read to complete.
 ---
 
 ### C. Control Hazard Logic (Solving Branch Mispredictions)
@@ -182,8 +183,8 @@ The Flush signals act as a synchronous reset, converting the "wrong" instruction
 ![After ctrl hazard](images/Af_Ctrl_Haz2.png)
 ![After ctrl hazard](images/Af_Ctrl_Haz3.png)
 
-**Observation:**  
-The waveforms show `PCSrc_out` going high, immediately triggering `FlushD` and `FlushE`. The instructions in the pipeline are replaced by NOPs (`00000013`).
+
+- **Observation:** The waveforms show `PCSrc_out` going high, immediately triggering `FlushD` and `FlushE`. The instructions in the pipeline are replaced by NOPs (`00000013`).
 ---
 
 
