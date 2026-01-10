@@ -90,6 +90,7 @@ These registers synchronize the flow of data, allowing the processor to work on 
 In the initial phase, the processor was designed without any hazard detection logic. While the data flow worked for independent instructions, it failed immediately when dependencies were introduced.
 
 **The Test Case:**
+
 ```assembly
 addi x1, x0, 4   # I1: Writes 4 to x1
 add  x2, x1, x1  # I2: Reads x1 (Expected: 4)
