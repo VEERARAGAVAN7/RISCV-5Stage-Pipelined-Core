@@ -1,4 +1,36 @@
-# RV32I-Pro: 5-Stage Pipelined RISC-V Processor
+#  RV32I-Pro: 5-Stage Pipelined RISC-V Processor
+
+<div align="center">
+
+![RISC-V](https://img.shields.io/badge/RISC--V-RV32I-blue?style=for-the-badge&logo=riscv)
+![Verilog](https://img.shields.io/badge/HDL-Verilog-orange?style=for-the-badge)
+![Vivado](https://img.shields.io/badge/Xilinx-Vivado-red?style=for-the-badge)
+![Pipeline](https://img.shields.io/badge/CPU-5--Stage%20Pipeline-green?style=for-the-badge)
+
+</div>
+
+## 📚 Contents
+
+- [Project Title](#1-project-title)
+- [Project Description](#2-project-description)
+- [Project Objective](#3-project-objective)
+- [Technical Stack](#4-technical-stack)
+- [Why This Project Matters](#why-this-project-matters)
+- [Fundamentals: RISC-V and Pipelining](#5-fundamentals-risc-v-and-pipelining)
+  - [RISC-V Overview](#risc-v-overview)
+  - [The Pipeline Advantage](#the-pipeline-advantage)
+- [Architecture Diagram](#6-architecture-diagram)
+- [Initial Implementation: The "Raw" Pipeline](#7-initial-implementation-the-raw-pipeline)
+- [Hazard Handling Strategy](#8-hazard-handling-strategy)
+- [Hazard Unit Implementation: Detailed Analysis](#9-hazard-unit-implementation-detailed-analysis)
+  - [Data Forwarding Logic (ALU-ALU Hazards)](#a-data-forwarding-logic-solving-alu-alu-hazards)
+  - [Load-Use Stall Logic (Memory Hazards)](#b-load-use-stall-logic-solving-memory-data-hazards)
+  - [Control Hazard Logic (Branch Mispredictions)](#c-control-hazard-logic-solving-branch-mispredictions)
+  - [Summary of Control Signals](#summary-of-control-signals)
+- [Integrated Hazard-Aware Architecture](#10-integrated-hazard-aware-architecture)
+- [Final Verification: Comprehensive Test](#11-final-verification-comprehensive-test)
+- [RTL Schematic & Implementation](#12-rtl-schematic--implementation)
+
 
 ## 1. Project Title
 **RV32I-Pro: A High-Performance 5-Stage Pipelined RISC-V Core with Advanced Hardware Hazard Resolution**
@@ -35,15 +67,24 @@ By breaking instruction execution into five stages—**IF (Fetch), ID (Decode), 
 ## 6. Architecture Diagram
 The architecture follows the standard 5-stage RISC-V datapath. It consists of five distinct processing stages separated by synchronous pipeline registers (IF/ID, ID/EX, EX/MEM, MEM/WB).
 
-**Fetch:** Updates the Program Counter (PC) and retrieves instructions from memory.
-**Decode:** Decodes instructions and reads operand values from the Register File.
-**Execute:** Performs ALU arithmetic/logic operations and calculates branch targets.
-**Memory:** Accesses Data Memory for Load/Store operations.
-**Writeback:** Updates the Register File with the final results.
+- **Fetch:** Updates the Program Counter (PC) and retrieves instructions from memory.
+- **Decode:** Decodes instructions and reads operand values from the Register File.
+- **Execute:** Performs ALU arithmetic/logic operations and calculates branch targets.
+- **Memory:** Accesses Data Memory for Load/Store operations.
+- **Writeback:** Updates the Register File with the final results.
 
 These registers synchronize the flow of data, allowing the processor to work on five different instructions simultaneously in a staggered manner. The diagram below illustrates this complete datapath, including the PC, Instruction Memory, Register File, ALU, Data Memory, and the main control path.
 
+---
+
 ![Architecture Diagram](images/Architecture.png)
+
+---
+<div align="center">
+
+🧠 IF → 🧮 ID → ⚙️ EX → 💾 MEM → 📝 WB  
+
+</div>
 
 ## 7. Initial Implementation: The "Raw" Pipeline
 In the initial phase, the processor was designed without any hazard detection logic. While the data flow worked for independent instructions, it failed immediately when dependencies were introduced.
@@ -57,15 +98,19 @@ and  x4, x2, x2       # I4: uses fresh x3  (EX/MEM/WB -> EX forward)
 sw   x4, 0(x3)        # I5: store uses fresh x4 as rs2 (EX/MEM -> MEM forward)
 lw   x5, 1(x3)        # I6: load‑use after store, check MEM/WB behavior + hazards
 ```
+---
+
 ![Before Forward](images/Bf_Frd1.png)
 ![Before Forward](images/Bf_Frd2.png)
 ![Before Forward](images/Bf_Frd3.png)
 
-### The Failure:
+---
+
+### ⚠️ The Failure:
 In a raw pipeline, instruction I2 reaches the Decode stage while I1 is only in the Execute stage. Since I1 has not yet reached Writeback, I2 reads the stale/reset value of x1 (which was 0) from the Register File. This error propagated through the entire sequence, causing sub, and, and sw instructions to compute incorrect results.
 
 ### Observation:
-The red highlights in the waveform show the ALU executing with 0x00 inputs instead of the expected 0x04.
+‼️‼️The red highlights in the waveform show the ALU executing with 0x00 inputs instead of the expected 0x04.
 
 ## 8. Hazard Handling Strategy
 To fix these failures, we categorized hazards into three types and implemented specific hardware solutions:
@@ -83,9 +128,10 @@ The Hazard Unit is a centralized combinatorial logic block responsible for maint
 
 The most common hazard occurs when an instruction in the Execute (EX) stage needs a result that is currently in the Memory (MEM) or Writeback (WB) stage.
 
-We implemented **"Forwarding Paths"** that allow the ALU to grab data directly from the pipeline registers of later stages, skipping the Register File read entirely.
 
-### The Challenge:
+⚙️ We implemented **"Forwarding Paths"** that allow the ALU to grab data directly from the pipeline registers of later stages, skipping the Register File read entirely.
+
+### ⚠️ The Challenge:
 If both the Memory Stage and Writeback Stage have data for the same register (e.g., `x1`), which one should the ALU use?
 
 
@@ -103,6 +149,8 @@ If the MEM stage doesn't match, but the WB stage is writing to the required regi
 
 **Why the Priority?**  
 If both MEM and WB stages are writing to the same register, the MEM stage contains the most recent version of that register according to the program order. Prioritizing MEM prevents using "stale" data from the WB stage.
+
+---
 
 ![After Forward](images/Af_Frd1.png)
 ![After Forward](images/Af_Frd2.png)
@@ -122,15 +170,20 @@ or  t2, s6, s7
 sub s3, s7, s2
 ```
 
+---
 ![Before stall](images/Bf_Stall.png)
+
+---
 
 ### The Symptom:
 In our waveform, we observed `lw s7, 40(s5)` followed by `and s8, s7, t3`. The `and` instruction read the stale value `0x28` instead of the loaded value `0x06` because it couldn't wait.
 
-**Detection:**  
+
+** ⚠️ Detection:**  
 We detect this if the instruction currently in Execute is a Load (`ResultSrcE[0] == 1`) and its destination (`RdE`) matches the sources of the instruction currently in Decode (`Rs1D` or `Rs2D`).
 
-**Action (The 1-Cycle "Bubble"):**
+
+**⚙️ Action (The 1-Cycle "Bubble"):**
 
 - **StallF & StallD:**  
   We set these to 1. This disables the clock enable on the Program Counter and the IF/ID pipeline register. The processor "freezes" the Fetch and Decode stages.
@@ -140,10 +193,14 @@ We detect this if the instruction currently in Execute is a Load (`ResultSrcE[0]
 
 In the next clock cycle, the Load moves to the MEM stage, and the dependent instruction (still in Decode) moves to Execute, where it can now successfully receive the data via the MEM-to-EX forwarding path.
 
+---
+
 ![After stall](images/Af_Stall.png)
 
+---
 
-- **Observation:** The waveform now shows the pipeline "pausing" for 1 cycle (PC holds value 104), creating a bubble that allows the memory read to complete.
+- **🔍 Observation:** The waveform now shows the pipeline "pausing" for 1 cycle (PC holds value 104), creating a bubble that allows the memory read to complete.
+
 ---
 
 ### C. Control Hazard Logic (Solving Branch Mispredictions)
@@ -159,15 +216,18 @@ L1: add x23, x19, x20
     add x26, x25, x24
     add x27, x26, x25
 ```
+---
 
 ![Before ctrl hazard](images/Bf_Ctrl_Haz1.png)
 ![Before ctrl hazard](images/Bf_Ctrl_Haz2.png)
 ![Before ctrl hazard](images/Bf_Ctrl_Haz3.png)
 
+---
+
 ### The Symptom:
 The instructions immediately following the branch (e.g., `add` and `sub`) were executing and modifying registers even though the program logic dictated they should be skipped.
 
-**Action :**
+**⚙️ Action :**
 We implemented a synchronous Pipeline Flush.
 
 **The Logic:** When `PCSrcE` (Branch Taken signal) goes High:
@@ -178,15 +238,22 @@ We implemented a synchronous Pipeline Flush.
 **Design Note:**  
 The Flush signals act as a synchronous reset, converting the "wrong" instructions into NOPs. This ensures the architectural state (registers/memory) remains clean.
 
+---
 
 ![After ctrl hazard](images/Af_Ctrl_Haz1.png)
 ![After ctrl hazard](images/Af_Ctrl_Haz2.png)
 ![After ctrl hazard](images/Af_Ctrl_Haz3.png)
 
-
-- **Observation:** The waveforms show `PCSrc_out` going high, immediately triggering `FlushD` and `FlushE`. The instructions in the pipeline are replaced by NOPs (`00000013`).
 ---
 
+- **🔍 Observation:** The waveforms show `PCSrc_out` going high, immediately triggering `FlushD` and `FlushE`. The instructions in the pipeline are replaced by NOPs (`00000013`).
+---
+
+<div align="center">
+
+⚠️ Forwarding → ⏸️ Stalling → 🧹 Flushing → ✅ CPI = 1
+
+</div>
 
 ### Summary of Control Signals:
 
@@ -204,7 +271,11 @@ It visualizes the critical hardware additions:
 * **Forwarding Paths:** Data lines routing back from the MEM and WB stages to the ALU inputs via 3-way multiplexers.
 * **Control Lines:** The specific `Stall` and `Flush` signals connecting the Hazard Unit to the pipeline registers (IF/ID, ID/EX), demonstrating how the hardware physically pauses or clears stages during race conditions.
 
+---
+
 ![Final Hazard-Aware Architecture](images/hazard_architecture_diagram.png)
+
+---
 
 ## 11. Final Verification: Comprehensive Test
 
@@ -222,8 +293,12 @@ The processor handles all hazard types seamlessly. Data integrity is maintained 
 
 To ensure design quality and proper hierarchy, the design was elaborated in Xilinx Vivado. The schematic below confirms the logical connections between the Datapath (Fetch, Decode, Execute, Mem, WB) and the centralized Control Units (Controller, Hazard Unit).
 
+---
+
 ![Schematic diagram](images/Schematics.png)
 
-**Author:** [VEERARAGAVAN M]  
+---
+
+**Author:** VEERARAGAVAN M
 **Last Updated:** January 10, 2026  
 **License:** MIT
