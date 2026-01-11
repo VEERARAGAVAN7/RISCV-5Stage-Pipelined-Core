@@ -288,6 +288,7 @@ The processor handles all hazard types seamlessly. Data integrity is maintained 
 ![Finalwaveform](images/Final_wf1.png)
 ![Finalwaveform](images/Final_wf2.png)
 ![Finalwaveform](images/Final_wf3.png)
+![Finalwaveform](images/Final_wf4.png)
 ---
 
 ## 12. RTL Schematic & Implementation
