@@ -295,7 +295,6 @@ The processor handles all hazard types seamlessly. Data integrity is maintained 
 
 To ensure design quality and proper hierarchy, the design was elaborated in Xilinx Vivado. The schematic below confirms the logical connections between the Datapath (Fetch, Decode, Execute, Mem, WB) and the centralized Control Units (Controller, Hazard Unit).
 
----
 
 ![Schematic diagram](images/Schematics.png)
 
