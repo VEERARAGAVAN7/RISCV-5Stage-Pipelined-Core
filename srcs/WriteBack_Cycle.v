@@ -1,9 +1,9 @@
 `timescale 1ns / 1ps
 
-module WriteBack_Cycle(clk, rst, ResultSrcW, ALUResultW, ReadDataW, PCPlus4W, ResultW );
+module WriteBack_Cycle(ResultSrcW, ALUResultW, ReadDataW, PCPlus4W, ResultW );
 
 //Input Declaration
-input clk,rst;
+//input clk,rst;
 input [1:0] ResultSrcW;
 input [31:0] ALUResultW, ReadDataW, PCPlus4W;
 
