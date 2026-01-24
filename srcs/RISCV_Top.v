@@ -108,9 +108,7 @@ Data_Cycle Data_Cycle(.clk(clk),
                       .RdW(RdW));
 
 //WRITE BACK CYCLE
-WriteBack_Cycle WriteBack_Cycle(.clk(clk),
-                                .rst(rst),
-                                .ResultSrcW(ResultSrcW), 
+WriteBack_Cycle WriteBack_Cycle(.ResultSrcW(ResultSrcW), 
                                 .ALUResultW(ALUResultW), 
                                 .ReadDataW(ReadDataW), 
                                 .PCPlus4W(PCPlus4W), 

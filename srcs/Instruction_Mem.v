@@ -10,7 +10,7 @@ reg [31:0] Instr_Mem [1023:0];
 assign RD = (rst == 1'b1) ? {32{1'b0}} : Instr_Mem[A[31:2]];
 
 initial begin
-$readmemh("C:/Xilinx/XilinxProject/RISC_V_Pipelined/RISC V Pipeilned/IntrucMem.hex",Instr_Mem);
+$readmemh("C:/Xilinx/XilinxProject/RISC_V_Pipelined/RISC V Pipeilned/Complete_Verification.hex",Instr_Mem);
 end
 
 endmodule

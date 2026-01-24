@@ -19,9 +19,9 @@ assign A_and_B = A & B; //AND
 
 assign A_or_B  = A | B; //OR
 
-assign B_not   = ~B; //OR
+assign B_not   = ~B; //NOT
 
-assign B_mux   = ALU_crtl? B_not : B ; // mux for sub / add
+assign B_mux   = ALU_crtl[0]? B_not : B ; // mux for sub / add
 
 assign {cout,sum}  = A + B_mux + ALU_crtl[0]; //sum for sub / add
 
@@ -39,7 +39,7 @@ assign ALU_Result = ALU_mux; //Result
 //Flag Assignments
 assign Zero     = &(~ALU_Result);
 assign Negative = ALU_Result[31];
-assign Overflow = (~ALU_crtl[1]) & (ALU_crtl[0]^A[31]^B[31]) & (sum[31]^A[31]);
+assign Overflow = (~ALU_crtl[1]) & ~(ALU_crtl[0]^A[31]^B[31]) & (sum[31]^A[31]);
 assign Carry    = ~ALU_crtl[1] & cout;
 
 endmodule
